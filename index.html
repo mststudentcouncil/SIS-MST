@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>MST APP</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f8fafc">
@@ -27,7 +30,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
     </style>
 </head>
-<body class="flex justify-center h-screen w-screen overflow-hidden bg-gray-200">
+<body class="flex justify-center h-[100dvh] w-screen overflow-hidden ...">
 
     <div id="install-prompt" class="hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-md items-end sm:items-center justify-center pb-10 sm:pb-0 px-4 transition-opacity">
         <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl relative overflow-hidden">
