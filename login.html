@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Login - MSTSC Smart App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #0f172a; }
+        .glass-panel { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); }
+    </style>
+</head>
+<body class="flex justify-center items-center h-screen w-screen overflow-hidden bg-[url('https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center">
+    
+    <div class="absolute inset-0 bg-purple-900/70 mix-blend-multiply"></div>
+
+    <div class="relative w-full max-w-md px-8 z-10 flex flex-col items-center">
+        <div class="w-28 h-28 bg-white rounded-2xl shadow-2xl shadow-yellow-400/50 flex items-center justify-center mb-6 border-4 border-yellow-400 overflow-hidden p-1">
+            <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" alt="MSTSC Logo" class="w-full h-full object-contain rounded-xl">
+        </div>
+
+        <h1 class="text-4xl font-bold text-white mb-2 tracking-wide">MSTSC</h1>
+        <p class="text-purple-200 font-light mb-10 text-center">ระบบสารสนเทศสำหรับนักเรียน<br>โรงเรียนเมืองสุราษฎร์ธานี</p>
+
+        <div class="glass-panel w-full rounded-3xl p-8 flex flex-col items-center shadow-2xl">
+            <h2 class="text-white text-lg mb-6 font-medium">เข้าสู่ระบบเพื่อใช้งาน</h2>
+            
+            <button onclick="handleLogin()" class="w-full bg-white text-gray-800 font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
+                ลงชื่อเข้าใช้ด้วยอีเมลโรงเรียน
+            </button>
+            <p class="text-[10px] text-purple-200 mt-4 opacity-70">เฉพาะอีเมล @mst.ac.th เท่านั้น</p>
+        </div>
+
+        <div id="error-box" class="hidden mt-6 bg-red-500/80 text-white text-sm px-4 py-3 rounded-xl backdrop-blur-md flex items-center gap-2">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="error-message">กรุณาใช้อีเมลของโรงเรียนเท่านั้น!</span>
+        </div>
+    </div>
+
+    <script type="module">
+        // 1. ดึงชุดคำสั่งของ Firebase มาใช้งานผ่านระบบออนไลน์ (CDN)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        // 2. นำ Config ของคุณ Tonwan มาใส่
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBNubZEzVbtdLXuQoadXNeDaEPMvCKGwU",
+            authDomain: "mst-school.firebaseapp.com",
+            projectId: "mst-school",
+            storageBucket: "mst-school.firebasestorage.app",
+            messagingSenderId: "674395320659",
+            appId: "1:674395320659:web:74eca21ff2dfd9026af1a6"
+        };
+
+        // 3. เริ่มต้นเปิดระบบ Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        
+        // บังคับให้เด้งหน้าต่างเลือกบัญชีเสมอ
+        provider.setCustomParameters({ prompt: 'select_account' });
+
+        // 4. ฟังก์ชันเมื่อกดปุ่ม Login
+        window.handleLogin = async function() {
+            const errorBox = document.getElementById('error-box');
+            const errorMessage = document.getElementById('error-message');
+
+            try {
+                // เปิดหน้าต่างให้ล็อกอินด้วย Google
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                const email = user.email;
+
+                // แยกโดเมนเพื่อตรวจสอบ
+                const parts = email.split('@');
+                const username = parts[0]; 
+                const domain = parts[1];   
+
+                // เช็คว่าใช่อีเมลโรงเรียนหรือไม่ (ทดสอบ: สามารถเปลี่ยนเป็น gmail.com ก่อนได้ถ้าอยากลองระบบ)
+                if (domain !== 'mst.ac.th') {
+                    errorMessage.innerText = "การเข้าถึงถูกปฏิเสธ! รับเฉพาะ @mst.ac.th เท่านั้น";
+                    errorBox.classList.remove('hidden');
+                    // ถ้าไม่ใช่อีเมลโรงเรียน ให้เตะออกจากระบบทันที
+                    await signOut(auth);
+                    return;
+                }
+
+                // ปิดกล่องแจ้งเตือน (ถ้าเคยเปิดไว้)
+                errorBox.classList.add('hidden');
+                
+                // ดึงรหัสนักเรียน 5 หลักสุดท้าย
+                const studentId = username.slice(-5); 
+                
+                // บันทึกข้อมูลของนักเรียนคนนี้ลงในเครื่อง เพื่อส่งไปโชว์ที่หน้า index.html (หน้าบัตร)
+                localStorage.setItem('studentId', studentId);
+                localStorage.setItem('studentName', user.displayName); // ดึงชื่อจาก Google
+                localStorage.setItem('studentEmail', email);
+                localStorage.setItem('studentPic', user.photoURL);     // ดึงรูปโปรไฟล์จาก Google
+
+                alert(`✅ เข้าสู่ระบบสำเร็จ!\nยินดีต้อนรับ ${user.displayName}\nรหัสนักเรียน: ${studentId}`);
+                
+                // พาย้ายไปหน้าแอปหลัก
+                window.location.href = 'index.html';
+
+            } catch (error) {
+                console.error("Login Failed: ", error);
+                errorMessage.innerText = "เกิดข้อผิดพลาดในการเข้าสู่ระบบ ลองใหม่อีกครั้ง";
+                errorBox.classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>

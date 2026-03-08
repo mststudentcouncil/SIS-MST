@@ -1,0 +1,21 @@
+{
+  "name": "MST APP",
+  "short_name": "MST APP",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#581c87",
+  "description": "แอปพลิเคชันอย่างเป็นทางการสำหรับนักเรียนโรงเรียนเมืองสุราษฎร์ธานี",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

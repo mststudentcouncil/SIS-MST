@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MST APP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f8fafc">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* 🌟 เอฟเฟกต์กระจกฝ้าสุดพรีเมียม */
+        .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05); }
+        .glass-dark { background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        /* ✨ แสงสะท้อนวิบวับบนบัตร (Holographic Shine) */
+        .card-shine { position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%); transform: skewX(-20deg); animation: shine 5s infinite; z-index: 20; pointer-events: none; }
+        @keyframes shine { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+        
+        /* 🎈 เอฟเฟกต์บัตรลอยตัว */
+        .floating { animation: floating 4s ease-in-out infinite; }
+        @keyframes floating { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+
+        /* Animation สลับหน้าต่าง */
+        .active-nav { color: #7e22ce; transform: scale(1.15) translateY(-2px); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        .animate-fade-in { animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        
+        /* Gradient Text */
+        .text-gradient { background: linear-gradient(135deg, #7e22ce, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="flex justify-center h-screen w-screen overflow-hidden bg-gray-200">
+
+    <div id="install-prompt" class="hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-md items-end sm:items-center justify-center pb-10 sm:pb-0 px-4 transition-opacity">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-16 -right-16 w-32 h-32 bg-purple-500 rounded-full mix-blend-multiply blur-2xl opacity-20"></div>
+            <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-20 h-20 mx-auto rounded-3xl shadow-lg mb-6 border-4 border-white">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">ติดตั้ง MST APP</h2>
+            <p class="text-sm text-gray-500 mb-6">เพื่อประสบการณ์ใช้งานที่รวดเร็ว ลื่นไหล และเข้าถึงบัตรนักเรียนได้ทันที</p>
+            <button id="btn-install-app" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-lg py-4 rounded-2xl shadow-[0_10px_20px_rgba(124,58,237,0.3)] hover:scale-[1.02] transition-all mb-4"><i class="fa-solid fa-download mr-2"></i> ติดตั้งแอปพลิเคชัน</button>
+            <div id="ios-instruction" class="hidden bg-gray-50 p-4 rounded-xl text-left border border-gray-100">
+                <p class="text-[11px] text-gray-600 font-bold mb-2"><i class="fa-brands fa-apple mr-1"></i> สำหรับผู้ใช้ iPhone/iPad:</p>
+                <ol class="text-[10px] text-gray-500 list-decimal ml-4 space-y-1">
+                    <li>แตะไอคอน <b>แชร์</b> <i class="fa-solid fa-arrow-up-from-bracket mx-1"></i> ด้านล่าง</li>
+                    <li>เลือก <b>เพิ่มไปยังหน้าจอโฮม</b> <i class="fa-regular fa-square-plus mx-1"></i></li>
+                </ol>
+            </div>
+            <button onclick="document.getElementById('install-prompt').classList.add('hidden')" class="text-xs text-gray-400 mt-4 underline">ใช้งานผ่านเว็บเบราว์เซอร์ต่อไป</button>
+        </div>
+    </div>
+
+    <div id="notification-modal" class="fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm hidden flex-col justify-end transition-opacity duration-300 opacity-0">
+        <div class="bg-white w-full max-w-md mx-auto h-full flex flex-col shadow-2xl transform translate-y-full transition-transform duration-500" id="notification-sheet">
+            
+            <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center shrink-0 bg-white">
+                <h2 class="text-2xl font-bold text-gray-800"><i class="fa-solid fa-bell text-violet-500 mr-3"></i>การแจ้งเตือน</h2>
+                <button onclick="toggleNotifications()" class="w-10 h-10 bg-gray-50 text-gray-500 rounded-full hover:bg-gray-200 transition-colors shadow-sm border border-gray-100"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div id="student-notif-list" class="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar bg-slate-50/50">
+                </div>
+            
+        </div>
+    </div>
+
+    <div class="relative w-full max-w-md h-full bg-[#f8fafc] shadow-2xl overflow-hidden flex flex-col">
+        
+        <header class="glass px-6 pt-12 pb-4 z-20 sticky top-0 flex justify-between items-center rounded-b-3xl">
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <img id="header-pic" src="https://placehold.co/100" class="w-14 h-14 rounded-2xl object-cover border-2 border-white shadow-md">
+                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                </div>
+                <div>
+                    <p id="greeting-time" class="text-[11px] text-gray-500 font-bold tracking-wide uppercase">สวัสดีตอนเช้า ☀️</p>
+                    <h1 id="header-name" class="text-lg font-extrabold text-gray-800 truncate max-w-[170px] tracking-tight">กำลังโหลด...</h1>
+                </div>
+            </div>
+            <div onclick="toggleNotifications()" class="bg-white p-3 rounded-2xl text-violet-600 cursor-pointer shadow-sm border border-gray-100 hover:shadow-md transition-all relative group">
+                <div id="notif-badge" class="hidden absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></div>
+                <i class="fa-regular fa-bell text-xl group-hover:scale-110 transition-transform"></i>
+            </div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto no-scrollbar pb-32 relative px-6 pt-6">
+            
+            <div id="view-home" class="view-section animate-fade-in space-y-6">
+                
+                <div class="bg-gradient-to-br from-violet-700 via-purple-700 to-indigo-900 rounded-[2rem] p-6 text-white shadow-[0_15px_30px_rgba(109,40,217,0.3)] relative overflow-hidden">
+                    <div class="card-shine"></div> <div class="absolute -right-12 -top-12 w-40 h-40 bg-fuchsia-500 rounded-full mix-blend-screen blur-[2.5rem] opacity-40"></div>
+                    <div class="absolute -left-12 -bottom-12 w-40 h-40 bg-blue-500 rounded-full mix-blend-screen blur-[2.5rem] opacity-40"></div>
+                    
+                    <div class="relative z-10 flex justify-between items-start mb-6">
+                        <div>
+                            <p class="text-[10px] text-violet-200 font-bold uppercase tracking-widest mb-1">ห้องเรียน</p>
+                            <h2 id="home-room" class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-500">---</h2>
+                        </div>
+                        <div class="bg-white/20 p-2 rounded-2xl backdrop-blur-sm border border-white/20">
+                            <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-10 h-10 rounded-xl object-contain bg-white">
+                        </div>
+                    </div>
+                    
+                    <div class="relative z-10 flex justify-between items-end">
+                        <div>
+                            <p class="text-[10px] text-violet-200 uppercase tracking-widest mb-0.5">รหัสนักเรียน</p>
+                            <p id="home-id" class="font-mono text-xl tracking-widest font-bold">-----</p>
+                        </div>
+                        <button onclick="switchNav('idcard', document.getElementById('nav-idcard'))" class="text-[11px] font-bold bg-white text-violet-700 px-4 py-2 rounded-full shadow-lg hover:scale-105 transition-transform">
+                            บัตรเต็ม <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-[1.5rem] p-1.5 shadow-sm border border-gray-100 flex items-center cursor-pointer hover:shadow-md transition-shadow" onclick="toggleNotifications()">
+                    <div class="bg-orange-100 text-orange-600 w-12 h-12 rounded-[1.2rem] flex items-center justify-center shrink-0 ml-1">
+                        <i class="fa-solid fa-bolt text-lg"></i>
+                    </div>
+                    <div class="ml-4 flex-1 pr-4">
+                        <p class="text-[10px] font-bold text-orange-500 uppercase tracking-wider mb-0.5">ประกาศล่าสุด</p>
+                        <p id="news-title" class="text-sm font-bold text-gray-800 truncate">ไม่มีประกาศใหม่</p>
+                    </div>
+                    <div class="pr-4 text-gray-300"><i class="fa-solid fa-chevron-right text-xs"></i></div>
+                </div>
+
+                <div>
+                    <h3 class="font-bold text-gray-800 mb-4 text-sm tracking-wide">แอปพลิเคชัน & บริการ</h3>
+                    <div class="grid grid-cols-4 gap-3">
+                        
+                        <div onclick="window.open('https://mstsc-e-voting.pages.dev/', '_blank')" class="col-span-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-[1.5rem] p-4 text-white cursor-pointer hover:scale-[1.02] shadow-md transition-transform relative overflow-hidden">
+                            <i class="fa-solid fa-check-to-slot absolute -right-2 -bottom-2 text-6xl opacity-20"></i>
+                            <div class="relative z-10">
+                                <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center mb-2 backdrop-blur-sm"><i class="fa-solid fa-bolt text-sm"></i></div>
+                                <h4 class="font-bold text-sm">Smart Vote</h4>
+                                <p class="text-[9px] opacity-80 mt-0.5">ระบบเลือกตั้งออนไลน์</p>
+                            </div>
+                        </div>
+
+                        <div onclick="window.open('https://reg-mstsc.pages.dev/', '_blank')" class="col-span-2 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-[1.5rem] p-4 text-white cursor-pointer hover:scale-[1.02] shadow-md transition-transform relative overflow-hidden">
+                            <i class="fa-solid fa-users-gear absolute -right-2 -bottom-2 text-6xl opacity-20"></i>
+                            <div class="relative z-10">
+                                <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center mb-2 backdrop-blur-sm"><i class="fa-solid fa-star text-sm"></i></div>
+                                <h4 class="font-bold text-sm">REG MSTSC</h4>
+                                <p class="text-[9px] opacity-80 mt-0.5">ระบบสภานักเรียน</p>
+                            </div>
+                        </div>
+
+                        <div onclick="window.open('https://reg-nurse.pages.dev/', '_blank')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-rose-50 transition-colors group">
+                            <div class="text-rose-500 text-2xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-briefcase-medical"></i></div>
+                            <span class="text-[10px] font-bold text-gray-600 text-center leading-tight">ห้อง<br>พยาบาล</span>
+                        </div>
+
+                        <div onclick="window.open('https://sgs.bopp-obec.info/sgss/Security/SignIn.aspx', '_blank')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-yellow-50 transition-colors group">
+                            <div class="text-yellow-500 text-2xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-graduation-cap"></i></div>
+                            <span class="text-[10px] font-bold text-gray-600 text-center leading-tight">ผลการ<br>เรียน</span>
+                        </div>
+
+                        <div onclick="window.open('http://mst.vlcloud.net/', '_blank')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-green-50 transition-colors group">
+                            <div class="text-green-500 text-2xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-book-bookmark"></i></div>
+                            <span class="text-[10px] font-bold text-gray-600 text-center leading-tight">ห้องสมุด<br>E-Library</span>
+                        </div>
+
+                        <div onclick="window.open('https://toschool.in/mst/', '_blank')" class="bg-white rounded-[1.2rem] p-3 shadow-sm border border-gray-100 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-teal-50 transition-colors group">
+                            <div class="text-teal-500 text-2xl group-hover:scale-110 transition-transform"><i class="fa-solid fa-clipboard-check"></i></div>
+                            <span class="text-[10px] font-bold text-gray-600 text-center leading-tight">ความ<br>ประพฤติ</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-schedule" class="view-section hidden animate-fade-in h-full flex flex-col">
+                <div class="flex justify-between items-center mb-4 shrink-0">
+                    <div>
+                        <h2 class="text-2xl font-black text-gray-800">ตารางเรียน</h2>
+                        <p class="text-xs text-gray-500 mt-0.5">ภาคเรียนปัจจุบัน</p>
+                    </div>
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-violet-600 border border-gray-100"><i class="fa-solid fa-calendar-days"></i></div>
+                </div>
+                
+                <div id="schedule-container" class="w-full bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden relative" style="height: calc(100dvh - 250px);">
+                    <div class="flex flex-col items-center justify-center h-full text-gray-400">
+                        <i class="fa-solid fa-spinner fa-spin text-4xl mb-4 text-violet-300"></i>
+                        <p class="text-sm font-bold text-gray-600">กำลังเชื่อมต่อตารางเรียน...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-idcard" class="view-section hidden animate-fade-in flex flex-col items-center pt-4">
+                
+                <div class="floating w-full max-w-[340px] bg-gradient-to-br from-indigo-900 via-violet-900 to-indigo-950 rounded-[2.5rem] p-6 text-white shadow-[0_30px_60px_rgba(76,29,149,0.4)] relative overflow-hidden border border-white/20">
+                    <div class="card-shine"></div>
+                    <div class="absolute -top-10 -right-10 w-48 h-48 bg-fuchsia-500 rounded-full mix-blend-screen blur-[3rem] opacity-30"></div>
+                    <div class="absolute -bottom-10 -left-10 w-48 h-48 bg-blue-400 rounded-full mix-blend-screen blur-[3rem] opacity-20"></div>
+                    
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-6 pb-4 border-b border-white/10">
+                            <div>
+                                <h3 class="text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-500 tracking-widest">MST APP</h3>
+                                <p class="text-[8px] text-gray-300 uppercase tracking-widest mt-1">Digital Student ID</p>
+                            </div>
+                            <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="h-12 w-12 rounded-xl bg-white p-1 shadow-md">
+                        </div>
+                        <div class="flex gap-5 items-center mb-6">
+                            <div class="w-24 h-32 rounded-2xl overflow-hidden border-2 border-white/30 bg-white shadow-inner shrink-0 relative">
+                                <img id="card-pic" src="" class="w-full h-full object-cover">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[8px] text-violet-300 uppercase tracking-widest mb-1 font-bold">Name / Surname</p>
+                                <h2 id="card-name" class="text-lg font-bold mb-3 truncate leading-tight">---</h2>
+                                <p class="text-[8px] text-violet-300 uppercase tracking-widest mb-1 font-bold">Student ID</p>
+                                <p id="card-id" class="font-mono text-xl text-yellow-400 tracking-widest font-bold">-----</p>
+                            </div>
+                        </div>
+                        <div class="glass-dark rounded-2xl p-4 flex justify-between items-center">
+                            <div><p class="text-[8px] text-gray-400 tracking-widest font-bold mb-1">CLASS / ROOM</p><p id="card-room" class="font-bold text-lg text-white leading-none">---</p></div>
+                            <div class="text-right"><p class="text-[8px] text-gray-400 tracking-widest font-bold mb-1">STATUS</p><p class="text-green-400 font-bold text-sm flex items-center gap-1.5 justify-end"><span class="relative flex h-2.5 w-2.5"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span></span>Active</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-10 bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col items-center w-full max-w-[340px]">
+                    <p class="text-gray-500 text-[10px] font-bold mb-4 uppercase tracking-widest bg-gray-50 px-4 py-1.5 rounded-full border border-gray-100"><i class="fa-solid fa-qrcode mr-1"></i> Scan to Verify</p>
+                    <div class="p-3 border-2 border-dashed border-gray-200 rounded-[1.5rem] bg-white"><img id="card-qr" src="" class="w-40 h-40 rounded-xl"></div>
+                </div>
+            </div>
+
+            <div id="view-settings" class="view-section hidden animate-fade-in">
+                <h2 class="text-2xl font-black text-gray-800 mb-6">ตั้งค่าแอปพลิเคชัน</h2>
+                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden mb-6">
+                    <div class="p-5 flex items-center gap-4 border-b border-gray-50 cursor-not-allowed opacity-60 bg-gray-50/50">
+                        <div class="w-12 h-12 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-circle-user"></i></div>
+                        <div class="flex-1"><p class="text-sm font-bold text-gray-800">ข้อมูลส่วนตัว</p><p class="text-[10px] text-gray-500">เปลี่ยนรหัสผ่าน (อยู่ระหว่างพัฒนา)</p></div>
+                    </div>
+                    <div onclick="window.open('http://www.mst.ac.th', '_blank')" class="p-5 flex items-center gap-4 cursor-pointer hover:bg-gray-50 transition-colors">
+                        <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-circle-info"></i></div>
+                        <div class="flex-1"><p class="text-sm font-bold text-gray-800">เกี่ยวกับโรงเรียน</p><p class="text-[10px] text-gray-500">เข้าสู่เว็บไซต์หลัก</p></div>
+                        <i class="fa-solid fa-chevron-right text-gray-300 text-sm"></i>
+                    </div>
+                </div>
+                <button onclick="handleLogout()" class="w-full bg-white text-red-500 font-bold py-4 rounded-[1.5rem] shadow-sm border border-red-100 flex justify-center items-center gap-2 hover:bg-red-50 hover:border-red-200 transition-all">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> ออกจากระบบ
+                </button>
+                <p class="text-center text-[10px] text-gray-400 font-bold tracking-widest mt-8 uppercase">MST APP Version 2.0.2</p>
+            </div>
+        </main>
+
+        <div class="absolute bottom-6 w-full px-6 z-30">
+            <nav class="glass shadow-[0_20px_40px_rgba(0,0,0,0.1)] rounded-[2rem] px-6 py-4 flex justify-between items-center relative">
+                <button id="nav-home" onclick="switchNav('home', this)" class="nav-item active-nav flex flex-col items-center gap-1 text-gray-400 w-12"><i class="fa-solid fa-house text-xl"></i><span class="text-[8px] font-bold">หน้าหลัก</span></button>
+                <button id="nav-schedule" onclick="switchNav('schedule', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 w-12"><i class="fa-solid fa-calendar-day text-xl"></i><span class="text-[8px] font-bold">ตาราง</span></button>
+                
+                <button id="nav-idcard" onclick="switchNav('idcard', this)" class="nav-item relative -top-8 flex flex-col items-center group w-12">
+                    <div class="absolute inset-0 bg-violet-500 rounded-full blur-md opacity-40 group-hover:opacity-60 transition-opacity"></div>
+                    <div class="w-[3.5rem] h-[3.5rem] bg-gradient-to-tr from-violet-600 to-indigo-500 rounded-full flex items-center justify-center text-white text-2xl shadow-xl border-[3px] border-white group-hover:scale-105 transition-transform relative z-10"><i class="fa-regular fa-id-badge"></i></div>
+                </button>
+
+                <button id="nav-settings" onclick="switchNav('settings', this)" class="nav-item flex flex-col items-center gap-1 text-gray-400 w-12"><i class="fa-solid fa-gear text-xl"></i><span class="text-[8px] font-bold">ตั้งค่า</span></button>
+            </nav>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBNubZEzVbtdLXuQoadXNeDaEPMvCKGwU",
+            authDomain: "mst-school.firebaseapp.com",
+            projectId: "mst-school",
+            storageBucket: "mst-school.firebasestorage.app",
+            messagingSenderId: "674395320659",
+            appId: "1:674395320659:web:74eca21ff2dfd9026af1a6"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ระบบ PWA
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(e => console.log(e)); }
+        let deferredPrompt;
+        const installPromptUi = document.getElementById('install-prompt');
+        if (!window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) {
+            setTimeout(() => {
+                installPromptUi.classList.remove('hidden'); installPromptUi.classList.add('flex');
+                if (/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())) {
+                    document.getElementById('btn-install-app').classList.add('hidden');
+                    document.getElementById('ios-instruction').classList.remove('hidden');
+                }
+            }, 1500);
+        }
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+        document.getElementById('btn-install-app').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') installPromptUi.classList.add('hidden');
+                deferredPrompt = null;
+            }
+        });
+
+        // ระบบสลับหน้า
+        window.switchNav = (id, el) => {
+            document.querySelectorAll('.view-section').forEach(v => v.classList.add('hidden'));
+            document.querySelectorAll('.nav-item').forEach(b => { if(!b.classList.contains('group')) b.classList.remove('active-nav', 'text-violet-700'); });
+            document.getElementById('view-' + id).classList.remove('hidden');
+            if(!el.classList.contains('group')) el.classList.add('active-nav', 'text-violet-700');
+        };
+
+        window.handleLogout = () => { localStorage.clear(); window.location.href = 'login.html'; };
+
+        // ระบบเปิดปิดหน้าต่างแจ้งเตือน
+        window.toggleNotifications = () => {
+            const modal = document.getElementById('notification-modal');
+            const sheet = document.getElementById('notification-sheet');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                setTimeout(() => { modal.classList.remove('opacity-0'); sheet.classList.remove('translate-y-full'); }, 10);
+                document.getElementById('notif-badge').classList.add('hidden');
+            } else {
+                modal.classList.add('opacity-0'); sheet.classList.add('translate-y-full');
+                setTimeout(() => { modal.classList.add('hidden'); }, 400);
+            }
+        };
+
+        // ฟังก์ชันตั้งคำทักทายตามเวลา
+        const setGreeting = () => {
+            const hour = new Date().getHours();
+            const greetingEl = document.getElementById('greeting-time');
+            if (hour < 12) greetingEl.innerHTML = 'สวัสดีตอนเช้า 🌅';
+            else if (hour < 17) greetingEl.innerHTML = 'สวัสดีตอนบ่าย ☀️';
+            else if (hour < 20) greetingEl.innerHTML = 'สวัสดีตอนเย็น 🌇';
+            else greetingEl.innerHTML = 'สวัสดีตอนค่ำ 🌙';
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const sid = localStorage.getItem('studentId'), spic = localStorage.getItem('studentPic');
+            if(!sid) return window.location.href = 'login.html';
+
+            setGreeting();
+
+            const finalPic = spic && spic !== "null" ? spic : `https://ui-avatars.com/api/?name=${sid}&background=6d28d9&color=fff`;
+            document.getElementById('header-pic').src = finalPic;
+            document.getElementById('card-pic').src = finalPic;
+            document.getElementById('home-id').innerText = sid;
+            document.getElementById('card-id').innerText = sid;
+            document.getElementById('card-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${sid}`;
+
+            // รับแจ้งเตือน Real-time
+            onSnapshot(query(collection(db, "notifications"), orderBy("updated_at", "desc")), (snapshot) => {
+                const listContainer = document.getElementById('student-notif-list');
+                listContainer.innerHTML = '';
+                
+                if(snapshot.empty) {
+                    listContainer.innerHTML = '<div class="text-center text-gray-400 py-10"><i class="fa-regular fa-bell-slash text-5xl mb-4 text-gray-200"></i><p class="text-sm font-bold text-gray-500">ไม่มีการแจ้งเตือน</p></div>';
+                    document.getElementById('news-title').innerText = 'ไม่มีประกาศใหม่';
+                    return;
+                }
+
+                document.getElementById('notif-badge').classList.remove('hidden');
+                let isFirst = true;
+
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (isFirst) {
+                        document.getElementById('news-title').innerText = data.title;
+                        isFirst = false;
+                    }
+                    const div = document.createElement('div');
+                    div.className = "bg-white p-5 rounded-[1.5rem] shadow-sm border border-gray-100 flex gap-4 items-start";
+                    div.innerHTML = `<div class="w-12 h-12 rounded-[1rem] bg-violet-100 text-violet-600 flex items-center justify-center shrink-0 text-lg"><i class="fa-solid fa-bullhorn"></i></div>
+                                     <div><h4 class="font-bold text-sm text-gray-800">${data.title}</h4><p class="text-xs text-gray-500 mt-1 leading-relaxed">${data.detail}</p></div>`;
+                    listContainer.appendChild(div);
+                });
+            });
+
+            try {
+                // โหลดนักเรียน & ตารางเรียน
+                const sDoc = await getDoc(doc(db, "students", sid));
+                if(sDoc.exists()){
+                    const sd = sDoc.data();
+                    const shortName = sd.name.split(' ')[0] + " " + (sd.name.split(' ')[1] || "");
+                    
+                    document.getElementById('header-name').innerText = shortName;
+                    document.getElementById('card-name').innerText = sd.name;
+                    document.getElementById('home-room').innerText = sd.room;
+                    document.getElementById('card-room').innerText = sd.room;
+
+                    const schDoc = await getDoc(doc(db, "schedules", sd.room.replace(/\//g, '-')));
+                    const sCon = document.getElementById('schedule-container');
+                    
+                    if(schDoc.exists() && schDoc.data().fileUrl){
+                        let driveUrl = schDoc.data().fileUrl;
+                        let idMatch = driveUrl.match(/id=([^&]+)/);
+                        if (idMatch) driveUrl = `https://drive.google.com/file/d/${idMatch[1]}/preview`;
+                        sCon.innerHTML = `<iframe src="${driveUrl}" class="absolute top-0 left-0 w-full h-full border-0" allow="autoplay"></iframe>`;
+                    } else {
+                        sCon.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400"><div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-2xl"><i class="fa-regular fa-calendar-xmark"></i></div><p class="text-sm font-bold text-gray-700">ยังไม่มีข้อมูลตารางเรียน</p><p class="text-xs mt-1">แอดมินยังไม่ได้อัปโหลดลิงก์ตารางเรียน</p></div>`;
+                    }
+                } else {
+                    Swal.fire({ icon: 'error', title: 'ไม่พบข้อมูล', text: 'ไม่มีรหัสนี้ในระบบโรงเรียน', heightAuto: false }).then(() => handleLogout());
+                }
+            } catch (error) { document.getElementById('header-name').innerText = "ข้อผิดพลาดการเชื่อมต่อ"; }
+        });
+    </script>
+</body>
+</html>

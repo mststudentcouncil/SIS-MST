@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MST APP - Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; }
+        .active-tab { background-color: #f3e8ff; color: #7e22ce; border-right: 4px solid #7e22ce; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="overflow-hidden">
+
+    <div id="login-screen" class="absolute inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-95 backdrop-blur-sm">
+        <div class="bg-white p-10 rounded-3xl shadow-2xl max-w-md w-full text-center">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6">Admin Portal</h1>
+            <button id="btn-login" class="w-full bg-white border border-gray-200 text-gray-800 font-medium py-3 rounded-xl flex items-center justify-center gap-3 shadow-sm hover:bg-gray-50 transition-all">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5"> ลงชื่อเข้าใช้ด้วย Google
+            </button>
+        </div>
+    </div>
+
+    <div id="dashboard-screen" class="hidden h-screen flex w-full">
+        <aside class="w-64 bg-white shadow-xl flex flex-col z-20">
+            <div class="p-6 border-b flex items-center gap-3">
+                <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-10 h-10 rounded-lg border">
+                <div><h2 class="font-bold text-gray-800 text-xs">MSTSC Admin</h2></div>
+            </div>
+            <nav class="flex-1 py-6 flex flex-col gap-1">
+                <button onclick="switchTab('students', this)" class="admin-tab-btn active-tab w-full flex items-center gap-3 px-6 py-3 text-sm font-medium hover:bg-purple-50 text-left"><i class="fa-solid fa-users w-5"></i> ข้อมูลนักเรียน</button>
+                <button onclick="switchTab('schedules', this)" class="admin-tab-btn w-full flex items-center gap-3 px-6 py-3 text-sm font-medium hover:bg-purple-50 text-left"><i class="fa-solid fa-calendar-alt w-5"></i> ตารางเรียน (Drive)</button>
+                <button onclick="switchTab('announcements', this)" class="admin-tab-btn w-full flex items-center gap-3 px-6 py-3 text-sm font-medium hover:bg-purple-50 text-left"><i class="fa-solid fa-bullhorn w-5"></i> แจ้งเตือนนักเรียน</button>
+            </nav>
+            <div class="p-4 border-t">
+                <button id="btn-logout" class="w-full bg-red-50 text-red-600 text-xs py-2 rounded-lg hover:bg-red-100 font-bold">ออกจากระบบ</button>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto bg-slate-50 p-8">
+            <div id="tab-students" class="admin-tab-content block">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-purple-700">1. นำเข้าข้อมูลนักเรียน</h2>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border max-w-xl">
+                    <input type="file" id="file-students" accept=".xlsx" class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-50 file:text-purple-700 border rounded-lg mb-4">
+                    <button id="btn-upload-students" class="w-full bg-purple-600 text-white font-bold py-3 rounded-xl hover:bg-purple-700">อัปโหลดรายชื่อ</button>
+                </div>
+            </div>
+
+            <div id="tab-schedules" class="admin-tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-blue-700">2. อัปโหลดลิงก์ตารางเรียน (จาก Drive)</h2>
+                <div class="bg-white rounded-2xl p-6 shadow-sm border max-w-xl">
+                    <p class="text-xs text-blue-600 mb-4 bg-blue-50 p-3 rounded-lg border border-blue-100">
+                        * โยนไฟล์ Excel ที่ได้จากสคริปต์ Google Sheets ได้เลย<br>
+                        * คอลัมน์ A: ชื่อไฟล์ (เช่น 6-6.pdf) | คอลัมน์ B: ลิงก์ Drive
+                    </p>
+                    <input type="file" id="file-schedules" accept=".xlsx" class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 border rounded-lg mb-4">
+                    <button id="btn-upload-schedules" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700">ผูกลิงก์ตารางเรียนทั้งโรงเรียน</button>
+                </div>
+            </div>
+
+            <div id="tab-announcements" class="admin-tab-content hidden">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 text-orange-600">3. ระบบจัดการการแจ้งเตือน</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 h-fit">
+                        <h3 class="font-bold text-gray-700 mb-4"><i class="fa-solid fa-plus-circle text-orange-500 mr-2"></i>สร้างการแจ้งเตือนใหม่</h3>
+                        <input type="text" id="announce-title" placeholder="หัวข้อประกาศ" class="w-full border rounded-xl px-4 py-3 mb-3 outline-none focus:ring-2 focus:ring-orange-500 bg-slate-50">
+                        <textarea id="announce-detail" rows="3" placeholder="รายละเอียด..." class="w-full border rounded-xl px-4 py-3 mb-4 outline-none focus:ring-2 focus:ring-orange-500 bg-slate-50"></textarea>
+                        <button id="btn-send-announce" class="w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold py-3 rounded-xl shadow-lg hover:shadow-orange-500/30 transition-all">ส่งแจ้งเตือนถึงนักเรียนทุกคน</button>
+                    </div>
+                    <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 flex flex-col max-h-[500px]">
+                        <h3 class="font-bold text-gray-700 mb-4"><i class="fa-solid fa-clock-rotate-left text-orange-500 mr-2"></i>ประวัติการแจ้งเตือน</h3>
+                        <div id="notification-list" class="flex-1 overflow-y-auto space-y-3 pr-2 no-scrollbar">
+                            <div class="text-center text-gray-400 py-10"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><p class="text-xs mt-2">กำลังโหลด...</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, writeBatch, serverTimestamp, collection, addDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCBNubZEzVbtdLXuQoadXNeDaEPMvCKGwU",
+            authDomain: "mst-school.firebaseapp.com",
+            projectId: "mst-school",
+            storageBucket: "mst-school.firebasestorage.app",
+            messagingSenderId: "674395320659",
+            appId: "1:674395320659:web:74eca21ff2dfd9026af1a6"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+        const allowedAdmins = ["admin@mst.ac.th", "6829903@mst.ac.th"]; 
+
+        onAuthStateChanged(auth, user => {
+            if (user && (user.email.endsWith("@mst.ac.th") || allowedAdmins.includes(user.email))) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+            } else if (user) { signOut(auth); Swal.fire('Error', 'ไม่ได้รับอนุญาต', 'error'); }
+        });
+
+        document.getElementById('btn-login').onclick = () => signInWithPopup(auth, provider);
+        document.getElementById('btn-logout').onclick = () => signOut(auth);
+
+        window.switchTab = (id, btn) => {
+            document.querySelectorAll('.admin-tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.admin-tab-btn').forEach(el => el.classList.remove('active-tab'));
+            document.getElementById('tab-' + id).classList.remove('hidden');
+            btn.classList.add('active-tab');
+        };
+
+        // --- อัปโหลดตารางเรียน ---
+        document.getElementById('btn-upload-schedules').onclick = async () => {
+            const file = document.getElementById('file-schedules').files[0];
+            if(!file) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกไฟล์ Excel ลิงก์ตารางเรียนก่อน', 'warning');
+            
+            Swal.fire({ title: 'กำลังผูกลิงก์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const workbook = XLSX.read(e.target.result, { type: 'array' });
+                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1 });
+                let batch = writeBatch(db), count = 0;
+
+                for(let i=1; i<rows.length; i++) {
+                    let rawName = String(rows[i][0] || "").trim();
+                    let rawLink = String(rows[i][1] || "").trim();
+                    
+                    let match = rawName.match(/(\d+)[-/_](\d+)/);
+                    let docId = match ? `ม.${match[1]}-${match[2]}` : rawName.split('.')[0].replace(/\//g, '-');
+                    let displayRoom = docId.replace(/-/g, '/'); 
+                    
+                    if(docId && rawLink.includes('drive.google.com')) {
+                        let linkMatch = rawLink.match(/\/d\/([^\/]+)/);
+                        let directLink = linkMatch ? `https://drive.google.com/file/d/${linkMatch[1]}/preview` : rawLink;
+                        
+                        batch.set(doc(db, "schedules", docId), {
+                            room: displayRoom,
+                            fileUrl: directLink,
+                            type: 'iframe',
+                            updated_at: serverTimestamp()
+                        });
+                        count++;
+                        if(count % 490 === 0) { await batch.commit(); batch = writeBatch(db); }
+                    }
+                }
+                await batch.commit();
+                Swal.fire('สำเร็จ', `อัปเดตลิงก์ตารางเรียน ${count} ห้องแล้วครับ`, 'success');
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        // --- นำเข้านักเรียน ---
+        document.getElementById('btn-upload-students').onclick = async () => {
+            const file = document.getElementById('file-students').files[0];
+            if(!file) return Swal.fire('แจ้งเตือน', 'เลือกไฟล์นักเรียนก่อนครับ', 'warning');
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const workbook = XLSX.read(e.target.result, { type: 'array' });
+                let batch = writeBatch(db), count = 0;
+                workbook.SheetNames.forEach(sn => {
+                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sn], { header: 1 });
+                    rows.forEach(row => {
+                        let idIdx = row.findIndex(c => /^\d{5}$/.test(String(c).trim()));
+                        if(idIdx !== -1) {
+                            batch.set(doc(db, "students", String(row[idIdx])), { 
+                                id: String(row[idIdx]), name: `${row[idIdx+1]}${row[idIdx+2]} ${row[row.length-1]}`.trim(), room: sn 
+                            });
+                            count++;
+                            if(count % 490 === 0) { batch.commit(); batch = writeBatch(db); }
+                        }
+                    });
+                });
+                await batch.commit();
+                Swal.fire('สำเร็จ', `นำเข้าข้อมูล ${count} คนแล้ว`, 'success');
+            };
+            reader.readAsArrayBuffer(file);
+        };
+
+        // --- ระบบแจ้งเตือน ---
+        document.getElementById('btn-send-announce').onclick = async () => {
+            const title = document.getElementById('announce-title').value;
+            const detail = document.getElementById('announce-detail').value;
+            if(!title || !detail) return Swal.fire('คำเตือน', 'กรอกข้อมูลให้ครบครับ', 'warning');
+            
+            try {
+                await addDoc(collection(db, "notifications"), { title, detail, updated_at: serverTimestamp() });
+                Swal.fire('สำเร็จ', 'ส่งแจ้งเตือนเรียบร้อย!', 'success');
+                document.getElementById('announce-title').value = '';
+                document.getElementById('announce-detail').value = '';
+            } catch (error) { Swal.fire('ข้อผิดพลาด', 'ไม่สามารถส่งประกาศได้', 'error'); }
+        };
+
+        const notifQuery = query(collection(db, "notifications"), orderBy("updated_at", "desc"));
+        onSnapshot(notifQuery, (snapshot) => {
+            const listContainer = document.getElementById('notification-list');
+            listContainer.innerHTML = '';
+            if(snapshot.empty) {
+                listContainer.innerHTML = '<div class="text-center text-gray-400 py-10"><i class="fa-regular fa-bell-slash text-3xl mb-2"></i><p class="text-sm">ยังไม่มีการแจ้งเตือน</p></div>';
+                return;
+            }
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                const div = document.createElement('div');
+                div.className = "bg-slate-50 p-4 rounded-2xl border border-gray-100 relative group";
+                div.innerHTML = `
+                    <button onclick="deleteNotification('${docSnap.id}')" class="absolute top-3 right-3 text-red-400 hover:text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-trash-can"></i></button>
+                    <h4 class="font-bold text-sm text-gray-800 pr-6">${data.title}</h4>
+                    <p class="text-xs text-gray-500 mt-1">${data.detail}</p>`;
+                listContainer.appendChild(div);
+            });
+        });
+
+        window.deleteNotification = async (id) => {
+            const result = await Swal.fire({
+                title: 'ยืนยันการลบ?', text: "การแจ้งเตือนนี้จะหายไปจากแอปนักเรียนทันที", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#d1d5db', confirmButtonText: 'ลบทิ้ง'
+            });
+            if (result.isConfirmed) { await deleteDoc(doc(db, "notifications", id)); }
+        };
+    </script>
+</body>
+</html>
