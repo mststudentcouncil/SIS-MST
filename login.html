@@ -7,38 +7,44 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; }
-        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 1); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1); }
+        body { font-family: 'Anuphan', sans-serif; background-color: #f8fafc; }
+        /* 🌟 เงาฟุ้งๆ ด้านหลังแบบมินิมอล (แทนขอบมน) */
+        .minimal-shadow { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08); }
         .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="min-h-screen w-full flex items-center justify-center bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center bg-fixed p-4">
+<body class="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4">
 
-    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm z-0"></div>
-
-    <div class="relative z-10 w-full max-w-md animate-fade-in">
-        <div class="glass-panel rounded-[2rem] p-8 sm:p-10 text-center relative overflow-hidden">
-            <div class="absolute -top-20 -right-20 w-40 h-40 bg-indigo-500 rounded-full mix-blend-multiply blur-[3rem] opacity-30"></div>
-            <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-500 rounded-full mix-blend-multiply blur-[3rem] opacity-30"></div>
+    <div class="w-full max-w-md animate-fade-in">
+        
+        <div class="bg-white rounded-none p-10 text-center relative minimal-shadow border border-gray-100">
             
             <div class="relative z-10">
-                <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-24 h-24 mx-auto rounded-3xl shadow-lg mb-6 border-[3px] border-white object-contain p-1 bg-white">
-                <h1 class="text-3xl font-black text-gray-800 tracking-tight mb-1">MST SIS</h1>
-                <p class="text-sm text-gray-600 font-bold tracking-widest uppercase mb-8">โรงเรียนเมืองสุราษฎร์ธานี</p>
+                <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-20 h-20 mx-auto drop-shadow-md mb-6 object-contain">
+                
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight mb-1">MST SIS</h1>
+                <p class="text-xs text-gray-500 font-medium tracking-widest uppercase mb-10">โรงเรียนเมืองสุราษฎร์ธานี</p>
 
-                <button id="btn-login" class="w-full bg-white hover:bg-gray-50 hover:scale-[1.02] border border-gray-200 text-gray-800 font-bold py-4 rounded-2xl flex items-center justify-center gap-3 shadow-sm transition-all">
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-6 h-6"> เข้าสู่ระบบด้วย @mst.ac.th
+                <button id="btn-login" class="w-full bg-white hover:bg-slate-50 border border-gray-200 text-gray-800 font-bold py-3.5 rounded-none flex items-center justify-center gap-3 transition-colors shadow-sm hover:shadow">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5"> เข้าสู่ระบบด้วย @mst.ac.th
                 </button>
-                <div class="mt-6 inline-block bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-xs font-semibold">
-                    <i class="fa-solid fa-lock mr-1"></i> ระบบสารสนเทศสำหรับนักเรียนโรงเรียนเมืองสุราษฎร์ธานีเท่านั้น
+                
+                <div class="mt-6 inline-block text-indigo-600 px-4 py-2 text-[11px] font-semibold bg-indigo-50 border border-indigo-100">
+                    <i class="fa-solid fa-lock mr-1"></i> ระบบสารสนเทศนักเรียน
                 </div>
             </div>
+            
         </div>
+        
+        <p class="text-center text-[10px] text-gray-400 mt-8 uppercase tracking-widest">
+            &copy; 2026 Student Information System - Muangsuratthani School. All rights reserved.
+        </p>
+
     </div>
 
     <script type="module">

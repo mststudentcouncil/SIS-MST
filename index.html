@@ -7,11 +7,11 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #f8fafc; }
+        body { font-family: 'Anuphan', sans-serif; background-color: #f8fafc; }
         .card-shadow { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03), 0 10px 25px rgba(0, 0, 0, 0.02); }
         
         /* 🌟 ไฮไลท์: เพิ่ม !important เพื่อบังคับให้สีเมนูเปลี่ยนตอนกด */
@@ -42,7 +42,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-3">
-                    <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-10 h-10 rounded-lg border border-gray-100 object-contain p-0.5">
+                    <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-10 h-10 object-contain drop-shadow-sm">
                     <div>
                         <h1 class="text-lg font-bold text-gray-900 leading-tight hidden sm:block">MST SIS Dashboard</h1>
                         <h1 class="text-lg font-bold text-gray-900 leading-tight sm:hidden">MST SIS</h1>
@@ -172,7 +172,7 @@
                     <div class="bg-purple-800 p-5 flex justify-between items-center text-white relative">
                         <div class="absolute -right-5 -top-10 w-28 h-28 bg-yellow-400 rounded-full mix-blend-screen filter blur-[2rem] opacity-40"></div>
                         <div class="flex items-center gap-3 relative z-10">
-                            <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-12 h-12 rounded-lg bg-white p-0.5 shadow-sm">
+                            <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-11 h-11 object-contain drop-shadow-md">
                             <div>
                                 <h3 class="font-bold text-sm leading-tight text-white">โรงเรียนเมืองสุราษฎร์ธานี</h3>
                                 <p class="text-[9px] opacity-80 uppercase tracking-wider">Muang Surat Thani School</p>
@@ -354,7 +354,7 @@
                         if (idMatch) driveUrl = `https://drive.google.com/file/d/${idMatch[1]}/preview`;
                         sCon.innerHTML = `<iframe src="${driveUrl}" class="absolute top-0 left-0 w-full h-full border-0" allow="autoplay"></iframe>`;
                     } else { sCon.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-400"><i class="fa-regular fa-calendar-xmark text-5xl mb-4"></i><p class="text-sm">ไม่มีข้อมูลตารางเรียน</p></div>`; }
-                } else { Swal.fire({ icon: 'error', title: 'ไม่พบข้อมูล', text: 'ไม่มีรหัสนี้ในระบบโรงเรียน' }).then(() => handleLogout()); }
+                } else { Swal.fire({ icon: 'error', title: 'ไม่พบข้อมูล', text: 'รหัสนักเรียนของคุณไม่มีสิทธิ์เข้าถึง' }).then(() => handleLogout()); }
             } catch (error) { document.getElementById('header-name').innerText = "ข้อผิดพลาดการเชื่อมต่อ"; }
         });
     </script>
