@@ -85,7 +85,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, writeBatch, serverTimestamp, collection, addDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, writeBatch, serverTimestamp, collection, addDoc, deleteDoc, onSnapshot, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -119,11 +119,10 @@
             btn.classList.add('active-tab');
         };
 
-        // --- อัปโหลดตารางเรียน ---
+        // --- ระบบอัปโหลดตารางเรียน (Link จาก Drive) คงไว้เหมือนเดิม ---
         document.getElementById('btn-upload-schedules').onclick = async () => {
             const file = document.getElementById('file-schedules').files[0];
             if(!file) return Swal.fire('แจ้งเตือน', 'กรุณาเลือกไฟล์ Excel ลิงก์ตารางเรียนก่อน', 'warning');
-            
             Swal.fire({ title: 'กำลังผูกลิงก์...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             
             const reader = new FileReader();
@@ -135,7 +134,6 @@
                 for(let i=1; i<rows.length; i++) {
                     let rawName = String(rows[i][0] || "").trim();
                     let rawLink = String(rows[i][1] || "").trim();
-                    
                     let match = rawName.match(/(\d+)[-/_](\d+)/);
                     let docId = match ? `ม.${match[1]}-${match[2]}` : rawName.split('.')[0].replace(/\//g, '-');
                     let displayRoom = docId.replace(/-/g, '/'); 
@@ -143,13 +141,7 @@
                     if(docId && rawLink.includes('drive.google.com')) {
                         let linkMatch = rawLink.match(/\/d\/([^\/]+)/);
                         let directLink = linkMatch ? `https://drive.google.com/file/d/${linkMatch[1]}/preview` : rawLink;
-                        
-                        batch.set(doc(db, "schedules", docId), {
-                            room: displayRoom,
-                            fileUrl: directLink,
-                            type: 'iframe',
-                            updated_at: serverTimestamp()
-                        });
+                        batch.set(doc(db, "schedules", docId), { room: displayRoom, fileUrl: directLink, type: 'iframe', updated_at: serverTimestamp() });
                         count++;
                         if(count % 490 === 0) { await batch.commit(); batch = writeBatch(db); }
                     }
@@ -160,39 +152,11 @@
             reader.readAsArrayBuffer(file);
         };
 
-        // --- นำเข้านักเรียน ---
-        document.getElementById('btn-upload-students').onclick = async () => {
-            const file = document.getElementById('file-students').files[0];
-            if(!file) return Swal.fire('แจ้งเตือน', 'เลือกไฟล์นักเรียนก่อนครับ', 'warning');
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const workbook = XLSX.read(e.target.result, { type: 'array' });
-                let batch = writeBatch(db), count = 0;
-                workbook.SheetNames.forEach(sn => {
-                    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sn], { header: 1 });
-                    rows.forEach(row => {
-                        let idIdx = row.findIndex(c => /^\d{5}$/.test(String(c).trim()));
-                        if(idIdx !== -1) {
-                            batch.set(doc(db, "students", String(row[idIdx])), { 
-                                id: String(row[idIdx]), name: `${row[idIdx+1]}${row[idIdx+2]} ${row[row.length-1]}`.trim(), room: sn 
-                            });
-                            count++;
-                            if(count % 490 === 0) { batch.commit(); batch = writeBatch(db); }
-                        }
-                    });
-                });
-                await batch.commit();
-                Swal.fire('สำเร็จ', `นำเข้าข้อมูล ${count} คนแล้ว`, 'success');
-            };
-            reader.readAsArrayBuffer(file);
-        };
-
-        // --- ระบบแจ้งเตือน ---
+        // --- ระบบแจ้งเตือน คงไว้เหมือนเดิม ---
         document.getElementById('btn-send-announce').onclick = async () => {
             const title = document.getElementById('announce-title').value;
             const detail = document.getElementById('announce-detail').value;
             if(!title || !detail) return Swal.fire('คำเตือน', 'กรอกข้อมูลให้ครบครับ', 'warning');
-            
             try {
                 await addDoc(collection(db, "notifications"), { title, detail, updated_at: serverTimestamp() });
                 Swal.fire('สำเร็จ', 'ส่งแจ้งเตือนเรียบร้อย!', 'success');
@@ -222,11 +186,103 @@
         });
 
         window.deleteNotification = async (id) => {
-            const result = await Swal.fire({
-                title: 'ยืนยันการลบ?', text: "การแจ้งเตือนนี้จะหายไปจากแอปนักเรียนทันที", icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#d1d5db', confirmButtonText: 'ลบทิ้ง'
-            });
+            const result = await Swal.fire({ title: 'ยืนยันการลบ?', text: "การแจ้งเตือนนี้จะหายไปจากแอปนักเรียนทันที", icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', cancelButtonColor: '#d1d5db', confirmButtonText: 'ลบทิ้ง' });
             if (result.isConfirmed) { await deleteDoc(doc(db, "notifications", id)); }
+        };
+
+        // 🌟 --- ระบบนำเข้านักเรียนแบบฉลาด (Smart Excel Parser ตัวเดิม) --- 🌟
+        document.getElementById('btn-upload-students').onclick = async () => {
+            const fileInput = document.getElementById('file-students');
+            const files = fileInput.files;
+
+            if (files.length === 0) { Swal.fire('ข้อผิดพลาด', 'กรุณากดเลือกไฟล์ Excel หรือ CSV อย่างน้อย 1 ไฟล์ก่อนครับ', 'warning'); return; }
+
+            Swal.fire({ title: 'กำลังประมวลผลไฟล์...', html: 'ระบบกำลังอ่านข้อมูลจากทุกแผ่นงาน (Sheet)<br>กรุณารอสักครู่ ห้ามปิดหน้าจอ', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+
+            let allStudents = [];
+            const processFile = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+                            workbook.SheetNames.forEach(sheetName => {
+                                let currentLevel = "ไม่ระบุ";
+                                let levelMatch = sheetName.match(/[mม]\.?\s*(\d)/i);
+                                if (levelMatch) currentLevel = `ม.${levelMatch[1]}`;
+
+                                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: "" });
+                                let currentRoom = "ไม่ระบุ";
+
+                                for (let row of rows) {
+                                    if (!row || row.length === 0) continue;
+
+                                    let roomCell = row.find(c => typeof c === 'string' && c.includes('ห้อง ม.'));
+                                    if (roomCell) {
+                                        currentRoom = roomCell.replace('ห้อง', '').trim();
+                                        let lvlMatch = currentRoom.match(/ม\.(\d)/);
+                                        if (lvlMatch) currentLevel = `ม.${lvlMatch[1]}`;
+                                    }
+
+                                    // ตรวจจับรหัสนักเรียน 5 หลัก (ตามระบบเดิม)
+                                    let idIndex = row.findIndex(c => (typeof c === 'string' || typeof c === 'number') && /^\d{5}$/.test(c.toString().trim()));
+                                    
+                                    if (idIndex !== -1) {
+                                        let studentId = row[idIndex].toString().trim();
+                                        let title = row[idIndex + 1] ? row[idIndex + 1].toString().trim() : "";
+                                        let fname = row[idIndex + 2] ? row[idIndex + 2].toString().trim() : "";
+                                        let lname = row[idIndex + 3] ? row[idIndex + 3].toString().trim() : "";
+                                        
+                                        let fullName = (row.length > idIndex + 4 && row[idIndex + 4] && row[idIndex + 4].toString().includes(fname)) ? row[idIndex + 4].toString().trim() : `${title}${fname} ${lname}`.trim();
+                                        fullName = fullName.replace(/['"]/g, '');
+
+                                        let rowRoom = row.find(c => typeof c === 'string' && c.match(/^ม\.\d\/\d+/));
+                                        if (rowRoom) currentRoom = rowRoom.trim();
+
+                                        // เพิ่มการแปลงชื่อห้องให้เป็น ม.X/X เสมอ เพื่อให้แอปนำไปใช้ได้ง่าย
+                                        let cleanRoom = currentRoom.replace(/^[mMม]\.?\s*/, 'ม.').replace('-', '/');
+
+                                        if (studentId && fullName.length > 5) { 
+                                            allStudents.push({ id: studentId, name: fullName, room: cleanRoom, level: currentLevel });
+                                        }
+                                    }
+                                }
+                            });
+                            resolve();
+                        } catch (err) { resolve(); }
+                    };
+                    reader.onerror = reject;
+                    reader.readAsArrayBuffer(file);
+                });
+            };
+
+            try {
+                for (let file of files) await processFile(file);
+                if (allStudents.length === 0) { Swal.fire('ข้อผิดพลาด', 'ไม่พบรายชื่อนักเรียนในรูปแบบที่ถูกต้อง', 'error'); return; }
+
+                const uniqueStudentsMap = new Map();
+                allStudents.forEach(item => uniqueStudentsMap.set(item.id, item));
+                const uniqueStudents = Array.from(uniqueStudentsMap.values());
+
+                Swal.fire({ title: 'กำลังอัปโหลดขึ้นเซิร์ฟเวอร์...', html: `พบรายชื่อนักเรียน ${uniqueStudents.length} คน<br>ระบบกำลังบันทึกข้อมูล`, allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
+
+                let batch = writeBatch(db);
+                let count = 0;
+                for (let i = 0; i < uniqueStudents.length; i++) {
+                    batch.set(doc(db, "students", uniqueStudents[i].id), { 
+                        id: uniqueStudents[i].id,
+                        name: uniqueStudents[i].name, 
+                        room: uniqueStudents[i].room, 
+                        level: uniqueStudents[i].level, 
+                        updated_at: serverTimestamp() 
+                    });
+                    count++;
+                    if (count === 490 || i === uniqueStudents.length - 1) { await batch.commit(); batch = writeBatch(db); count = 0; }
+                }
+                
+                Swal.fire('สำเร็จ!', `นำเข้าข้อมูลนักเรียนจำนวน ${uniqueStudents.length} คน เรียบร้อยแล้ว`, 'success');
+                fileInput.value = ""; 
+            } catch (error) { console.error(error); Swal.fire('ผิดพลาด', 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error'); }
         };
     </script>
 </body>

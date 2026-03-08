@@ -3,49 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Login - MSTSC Smart App</title>
+    <title>เข้าสู่ระบบ - MST APP</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f1f5f9">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
-        body { font-family: 'Kanit', sans-serif; background-color: #0f172a; }
-        .glass-panel { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); }
+        body { font-family: 'Kanit', sans-serif; background-color: #f1f5f9; }
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 25px 50px rgba(0, 0, 0, 0.05); }
+        .animate-fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
     </style>
 </head>
-<body class="flex justify-center items-center h-screen w-screen overflow-hidden bg-[url('https://images.unsplash.com/photo-1557682250-33bd709cbe85?q=80&w=2029&auto=format&fit=crop')] bg-cover bg-center">
-    
-    <div class="absolute inset-0 bg-purple-900/70 mix-blend-multiply"></div>
+<body class="flex items-center justify-center h-screen w-screen overflow-hidden bg-[url('https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center">
 
-    <div class="relative w-full max-w-md px-8 z-10 flex flex-col items-center">
-        <div class="w-28 h-28 bg-white rounded-2xl shadow-2xl shadow-yellow-400/50 flex items-center justify-center mb-6 border-4 border-yellow-400 overflow-hidden p-1">
-            <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" alt="MSTSC Logo" class="w-full h-full object-contain rounded-xl">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm z-0"></div>
+
+    <div id="install-prompt" class="hidden fixed inset-0 z-[100] bg-slate-900/80 backdrop-blur-md items-end sm:items-center justify-center pb-10 sm:pb-0 px-4 transition-opacity">
+        <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 text-center shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-16 -right-16 w-32 h-32 bg-purple-500 rounded-full mix-blend-multiply blur-2xl opacity-20"></div>
+            <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-20 h-20 mx-auto rounded-3xl shadow-lg mb-6 border-4 border-white">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">ติดตั้ง MST APP</h2>
+            <p class="text-sm text-gray-500 mb-6">กรุณาติดตั้งแอปลงบนมือถือของคุณก่อนเข้าสู่ระบบ เพื่อการใช้งานที่สมบูรณ์แบบ</p>
+            <button id="btn-install-app" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-lg py-4 rounded-2xl shadow-[0_10px_20px_rgba(124,58,237,0.3)] hover:scale-[1.02] transition-all mb-4"><i class="fa-solid fa-download mr-2"></i> ติดตั้งแอปพลิเคชัน</button>
+            <div id="ios-instruction" class="hidden bg-gray-50 p-4 rounded-xl text-left border border-gray-100">
+                <p class="text-[11px] text-gray-600 font-bold mb-2"><i class="fa-brands fa-apple mr-1"></i> สำหรับ iPhone/iPad:</p>
+                <ol class="text-[10px] text-gray-500 list-decimal ml-4 space-y-1">
+                    <li>แตะไอคอน <b>แชร์</b> <i class="fa-solid fa-arrow-up-from-bracket mx-1"></i> ด้านล่าง</li>
+                    <li>เลือก <b>เพิ่มไปยังหน้าจอโฮม</b> <i class="fa-regular fa-square-plus mx-1"></i></li>
+                </ol>
+            </div>
+            <button onclick="document.getElementById('install-prompt').classList.add('hidden')" class="text-xs text-gray-400 mt-4 underline">เข้าสู่ระบบผ่านเบราว์เซอร์ชั่วคราว</button>
         </div>
+    </div>
 
-        <h1 class="text-4xl font-bold text-white mb-2 tracking-wide">MSTSC</h1>
-        <p class="text-purple-200 font-light mb-10 text-center">ระบบสารสนเทศสำหรับนักเรียน<br>โรงเรียนเมืองสุราษฎร์ธานี</p>
-
-        <div class="glass-panel w-full rounded-3xl p-8 flex flex-col items-center shadow-2xl">
-            <h2 class="text-white text-lg mb-6 font-medium">เข้าสู่ระบบเพื่อใช้งาน</h2>
+    <div class="relative z-10 w-full max-w-sm px-6 animate-fade-in">
+        <div class="glass-panel rounded-[2.5rem] p-8 text-center relative overflow-hidden">
+            <div class="absolute -top-20 -right-20 w-40 h-40 bg-violet-400 rounded-full mix-blend-multiply blur-[3rem] opacity-40"></div>
+            <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-blue-400 rounded-full mix-blend-multiply blur-[3rem] opacity-40"></div>
             
-            <button onclick="handleLogin()" class="w-full bg-white text-gray-800 font-medium py-3 px-4 rounded-xl flex items-center justify-center gap-3 hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5">
-                ลงชื่อเข้าใช้ด้วยอีเมลโรงเรียน
-            </button>
-            <p class="text-[10px] text-purple-200 mt-4 opacity-70">เฉพาะอีเมล @mst.ac.th เท่านั้น</p>
-        </div>
+            <div class="relative z-10">
+                <img src="https://i.postimg.cc/7YLmZkwG/Muang-ST2020.jpg" class="w-24 h-24 mx-auto rounded-3xl shadow-[0_10px_20px_rgba(0,0,0,0.1)] mb-6 border-[3px] border-white">
+                <h1 class="text-2xl font-black text-gray-800 tracking-tight mb-1">MST APP</h1>
+                <p class="text-xs text-gray-500 font-bold tracking-widest uppercase mb-8">โรงเรียนเมืองสุราษฎร์ธานี</p>
 
-        <div id="error-box" class="hidden mt-6 bg-red-500/80 text-white text-sm px-4 py-3 rounded-xl backdrop-blur-md flex items-center gap-2">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span id="error-message">กรุณาใช้อีเมลของโรงเรียนเท่านั้น!</span>
+                <button id="btn-login" class="w-full bg-white hover:bg-gray-50 hover:scale-[1.02] border border-gray-100 text-gray-700 font-bold py-4 rounded-2xl flex items-center justify-center gap-3 shadow-[0_10px_20px_rgba(0,0,0,0.05)] transition-all">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5"> เข้าสู่ระบบด้วยอีเมลโรงเรียน
+                </button>
+                <p class="text-[10px] text-gray-400 mt-5">เฉพาะอีเมล @mst.ac.th เท่านั้น</p>
+            </div>
         </div>
     </div>
 
     <script type="module">
-        // 1. ดึงชุดคำสั่งของ Firebase มาใช้งานผ่านระบบออนไลน์ (CDN)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        // 2. นำ Config ของคุณ Tonwan มาใส่
+        // ตั้งค่า Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCBNubZEzVbtdLXuQoadXNeDaEPMvCKGwU",
             authDomain: "mst-school.firebaseapp.com",
@@ -54,63 +74,78 @@
             messagingSenderId: "674395320659",
             appId: "1:674395320659:web:74eca21ff2dfd9026af1a6"
         };
-
-        // 3. เริ่มต้นเปิดระบบ Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+
+        // 🌟 ระบบ PWA (บังคับติดตั้งตั้งแต่หน้า Login)
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(e => console.log(e)); }
+        let deferredPrompt;
+        const installPromptUi = document.getElementById('install-prompt');
+        const isInStandaloneMode = () => ('standalone' in window.navigator) && (window.navigator.standalone) || window.matchMedia('(display-mode: standalone)').matches;
         
-        // บังคับให้เด้งหน้าต่างเลือกบัญชีเสมอ
-        provider.setCustomParameters({ prompt: 'select_account' });
-
-        // 4. ฟังก์ชันเมื่อกดปุ่ม Login
-        window.handleLogin = async function() {
-            const errorBox = document.getElementById('error-box');
-            const errorMessage = document.getElementById('error-message');
-
-            try {
-                // เปิดหน้าต่างให้ล็อกอินด้วย Google
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                const email = user.email;
-
-                // แยกโดเมนเพื่อตรวจสอบ
-                const parts = email.split('@');
-                const username = parts[0]; 
-                const domain = parts[1];   
-
-                // เช็คว่าใช่อีเมลโรงเรียนหรือไม่ (ทดสอบ: สามารถเปลี่ยนเป็น gmail.com ก่อนได้ถ้าอยากลองระบบ)
-                if (domain !== 'mst.ac.th') {
-                    errorMessage.innerText = "การเข้าถึงถูกปฏิเสธ! รับเฉพาะ @mst.ac.th เท่านั้น";
-                    errorBox.classList.remove('hidden');
-                    // ถ้าไม่ใช่อีเมลโรงเรียน ให้เตะออกจากระบบทันที
-                    await signOut(auth);
-                    return;
+        // ถ้านักเรียนยังไม่ได้ติดตั้งแอป ให้เด้งหน้าต่างขึ้นมาเตือนทันที
+        if (!isInStandaloneMode()) {
+            setTimeout(() => {
+                installPromptUi.classList.remove('hidden'); installPromptUi.classList.add('flex');
+                if (/iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase())) {
+                    document.getElementById('btn-install-app').classList.add('hidden');
+                    document.getElementById('ios-instruction').classList.remove('hidden');
                 }
-
-                // ปิดกล่องแจ้งเตือน (ถ้าเคยเปิดไว้)
-                errorBox.classList.add('hidden');
-                
-                // ดึงรหัสนักเรียน 5 หลักสุดท้าย
-                const studentId = username.slice(-5); 
-                
-                // บันทึกข้อมูลของนักเรียนคนนี้ลงในเครื่อง เพื่อส่งไปโชว์ที่หน้า index.html (หน้าบัตร)
-                localStorage.setItem('studentId', studentId);
-                localStorage.setItem('studentName', user.displayName); // ดึงชื่อจาก Google
-                localStorage.setItem('studentEmail', email);
-                localStorage.setItem('studentPic', user.photoURL);     // ดึงรูปโปรไฟล์จาก Google
-
-                alert(`✅ เข้าสู่ระบบสำเร็จ!\nยินดีต้อนรับ ${user.displayName}\nรหัสนักเรียน: ${studentId}`);
-                
-                // พาย้ายไปหน้าแอปหลัก
-                window.location.href = 'index.html';
-
-            } catch (error) {
-                console.error("Login Failed: ", error);
-                errorMessage.innerText = "เกิดข้อผิดพลาดในการเข้าสู่ระบบ ลองใหม่อีกครั้ง";
-                errorBox.classList.remove('hidden');
-            }
+            }, 800); // เด้งเตือนเร็วขึ้น (0.8 วินาที)
         }
+
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+        document.getElementById('btn-install-app').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') installPromptUi.classList.add('hidden');
+                deferredPrompt = null;
+            }
+        });
+
+        // 🌟 ระบบล็อกอิน
+        // เช็คว่าเคยล็อกอินค้างไว้ไหม ถ้าเคย ให้เด้งไปหน้า index.html ทันที
+        onAuthStateChanged(auth, user => {
+            if (user && user.email.endsWith("@mst.ac.th")) {
+                const emailPrefix = user.email.split('@')[0];
+                const studentId = emailPrefix.slice(-5); // ตัด 5 ตัวท้ายเหมือนกัน
+                localStorage.setItem('studentId', studentId);
+                localStorage.setItem('studentPic', user.photoURL);
+                window.location.href = 'index.html';
+            }
+        });
+
+        document.getElementById('btn-login').onclick = () => {
+            signInWithPopup(auth, provider).then((result) => {
+                const user = result.user;
+                // ตรวจสอบว่าเป็นอีเมลโรงเรียนหรือไม่
+                if (user.email.endsWith("@mst.ac.th")) {
+                    
+                    // 1. ดึงข้อความหน้า @ ออกมา (เช่น "6829903")
+                    const emailPrefix = user.email.split('@')[0];
+                    
+                    // 2. 🌟 ตัดเอาเฉพาะ 5 ตัวท้าย (รหัสนักเรียนจริงๆ)
+                    const studentId = emailPrefix.slice(-5); 
+                    
+                    localStorage.setItem('studentId', studentId);
+                    localStorage.setItem('studentPic', user.photoURL);
+                    window.location.href = 'index.html';
+                    
+                } else {
+                    auth.signOut();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เข้าสู่ระบบล้มเหลว',
+                        text: 'กรุณาใช้อีเมลของโรงเรียน (@mst.ac.th) เท่านั้นครับ',
+                        confirmButtonColor: '#7e22ce'
+                    });
+                }
+            }).catch((error) => {
+                console.error(error);
+            });
+        };
     </script>
 </body>
 </html>
